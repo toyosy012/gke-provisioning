@@ -14,3 +14,12 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
   member = "serviceAccount:${google_service_account.gke-provisioner.email}"
   project = var.PROJECT_ID
 }
+
+resource "google_container_cluster" "training_cluster" {
+  name     = "training_cluster"
+  location = "asia-northeast1"
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  min_master_version = "1.23"
+}

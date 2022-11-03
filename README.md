@@ -7,3 +7,9 @@
 
 1. `Cloud Resource Manager API`の有効化
 2. 作成用Service Accountに`Project IAM 管理者`ロールを付与
+
+### GEK クラスター作成
+
+1. `Kubernetes Engine API`の有効化
+2. 作成用Service Accountに`Kubernetes Engine 管理者`ロールを付与
+3. 作成用Service Accountに`サービス アカウント ユーザー`ロールを付与
