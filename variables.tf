@@ -14,3 +14,5 @@ variable "project" {
     zone    = string
   })
 }
+
+variable "location" { type = string }
