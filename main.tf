@@ -17,7 +17,7 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
 
 resource "google_container_cluster" "training_cluster" {
   name     = "training-cluster"
-  location = "asia-northeast1"
+  location = var.location
 
   remove_default_node_pool = true
   initial_node_count       = 1
@@ -44,7 +44,7 @@ resource "google_container_node_pool" "training_nodes" {
   cluster = google_container_cluster.training_cluster.name
   name = "training-node-pool"
 
-  location = "asia-northeast1"
+  location = var.location
   node_count = 1
   node_config {
     preemptible  = true
@@ -76,7 +76,7 @@ resource "google_compute_network" "gke_network" {
 
 resource "google_compute_subnetwork" "gke_subnetwork" {
   name   = "training-gke-subnetwork"
-  region = "asia-northeast1"
+  region = var.location
 
   # サブネットで使用したい内部IPアドレスの範囲を指定する
   ip_cidr_range = "10.0.0.0/16"
