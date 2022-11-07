@@ -8,6 +8,16 @@ variable "PROJECT_ID" {
   description = "Read the TF_VAR_PROJECT_ID variable by environment."
 }
 
+variable "PROJECT_NUMBER" {
+  type = string
+  description = "Read the TF_VAR_PROJECT_NUMBER variable by environment."
+}
+
+variable "BASTION_IMAGE" {
+  type = string
+  description = "Read the TF_VAR_BASTION_IMAGE variable by environment."
+}
+
 variable "project" {
   type = object({
     region  = string
@@ -16,3 +26,4 @@ variable "project" {
 }
 
 variable "location" { type = string }
+variable "bastion_hostname" { type = string }

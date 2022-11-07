@@ -12,7 +12,7 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
   ])
   role   = each.value
   member = "serviceAccount:${google_service_account.gke-provisioner.email}"
-  project = var.PROJECT_ID
+  project = var.PROJECT_NUMBER
 }
 
 resource "google_container_cluster" "training_cluster" {
@@ -98,4 +98,69 @@ resource "google_compute_subnetwork" "gke_subnetwork" {
   }
 
   private_ip_google_access = true
+}
+
+resource "google_service_account" "bastion" {
+  account_id   = "bastion"
+  display_name = "Bastion Server For Private GKE Cluster"
+}
+
+data "template_file" "startup_script" {
+  template = <<-EOF
+  sudo apt-get update -y
+  sudo apt-get install -y tinyproxy
+  EOF
+}
+
+resource "google_compute_instance" "gke_bastion_host" {
+  name         = var.bastion_hostname
+  machine_type = "n1-standard-1"
+  zone         = var.project.zone
+  project      = var.PROJECT_NUMBER
+  tags = [
+    "bastion"
+  ]
+
+  boot_disk {
+    initialize_params {
+      image = var.BASTION_IMAGE
+    }
+  }
+
+  metadata_startup_script = data.template_file.startup_script.rendered
+  network_interface {
+    network = google_compute_network.gke_network.name
+    subnetwork = google_compute_subnetwork.gke_subnetwork.name
+  }
+
+  allow_stopping_for_update = true
+
+  service_account {
+    email = google_service_account.bastion.email
+    scopes = ["cloud-platform"]
+  }
+  scheduling {
+    preemptible = true
+    automatic_restart = false
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+        READY=""
+        for i in $(seq 1 20); do
+          if gcloud compute ssh ${var.bastion_hostname} --project ${var.PROJECT_ID} --zone ${var.project.zone} --command uptime; then
+            READY="yes"
+            break;
+          fi
+          echo "Waiting for ${var.bastion_hostname} to initialize..."
+          sleep 10;
+        done
+        if [[ -z $READY ]]; then
+          echo "${var.bastion_hostname} failed to start in time."
+          echo "Please verify that the instance starts and then re-run `terraform apply`"
+          exit 1
+        fi
+EOF
+  }
+
 }
