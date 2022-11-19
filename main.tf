@@ -1,4 +1,4 @@
-resource "google_service_account" "gke-provisioner" {
+resource "google_service_account" "gke_provisioner" {
   account_id   = "gke-provisioner"
   display_name = "gke-provisioner"
   description  = "A service account for GKE"
@@ -11,7 +11,7 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
     "roles/monitoring.viewer"
   ])
   role   = each.value
-  member = "serviceAccount:${google_service_account.gke-provisioner.email}"
+  member = "serviceAccount:${google_service_account.gke_provisioner.email}"
   project = var.PROJECT_NUMBER
 }
 
@@ -23,8 +23,9 @@ resource "google_container_cluster" "training_cluster" {
   initial_node_count       = 1
   min_master_version = "1.23"
 
-  network = google_compute_network.gke_network.name
-  subnetwork = google_compute_subnetwork.gke_subnetwork.name
+  network = google_compute_network.training_gke.name
+  subnetwork = google_compute_subnetwork.training_gke.name
+  enable_intranode_visibility = true
 
   private_cluster_config {
     enable_private_endpoint = true
@@ -35,8 +36,8 @@ resource "google_container_cluster" "training_cluster" {
   master_authorized_networks_config {
   }
   ip_allocation_policy {
-    cluster_secondary_range_name = google_compute_subnetwork.gke_subnetwork.secondary_ip_range.0.range_name
-    services_secondary_range_name = google_compute_subnetwork.gke_subnetwork.secondary_ip_range.1.range_name
+    cluster_secondary_range_name = google_compute_subnetwork.training_gke.secondary_ip_range.0.range_name
+    services_secondary_range_name = google_compute_subnetwork.training_gke.secondary_ip_range.1.range_name
   }
 }
 
