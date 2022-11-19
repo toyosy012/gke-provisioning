@@ -115,3 +115,11 @@ module "bastion_host" {
   zone = var.project.zone
   region = var.project.region
 }
+
+module "nat" {
+  source = "./modules/nat"
+
+  gke_network_name = google_compute_network.training_gke.name
+  project_id       = var.PROJECT_ID
+  region           = var.project.region
+}
