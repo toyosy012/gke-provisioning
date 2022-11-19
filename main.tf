@@ -12,7 +12,7 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
   ])
   role   = each.value
   member = "serviceAccount:${google_service_account.gke-provisioner.email}"
-  project = var.PROJECT_ID
+  project = var.PROJECT_NUMBER
 }
 
 resource "google_container_cluster" "training_cluster" {
@@ -69,18 +69,18 @@ resource "google_service_account" "gke_nodes" {
   display_name = "My Service Account For My Cluster Nodes"
 }
 
-resource "google_compute_network" "gke_network" {
+resource "google_compute_network" "training_gke" {
   name                    = "training-gke-network"
   auto_create_subnetworks = false
 }
 
-resource "google_compute_subnetwork" "gke_subnetwork" {
+resource "google_compute_subnetwork" "training_gke" {
   name   = "training-gke-subnetwork"
   region = var.location
 
   # サブネットで使用したい内部IPアドレスの範囲を指定する
   ip_cidr_range = "10.0.0.0/16"
-  network       = google_compute_network.gke_network.self_link
+  network       = google_compute_network.training_gke.self_link
 
   # CloudLoggingにFlowLogログを出力したい場合は設定する
   log_config {
@@ -98,4 +98,20 @@ resource "google_compute_subnetwork" "gke_subnetwork" {
   }
 
   private_ip_google_access = true
+}
+
+module "bastion_host" {
+  source = "./modules/bastion"
+  BASTION_IMAGE_FAMILY = var.BASTION_IMAGE_FAMILY
+  BASTION_IMAGE_PROJECT = var.BASTION_IMAGE_PROJECT
+  CREDENTIALS_PATH = var.CREDENTIALS_PATH
+  PROJECT_ID = var.PROJECT_ID
+  PROJECT_NUMBER = var.PROJECT_NUMBER
+  bastion_hostname = var.bastion_hostname
+  gke_network_name = google_compute_network.training_gke.name
+  gke_subnetwork_name = google_compute_subnetwork.training_gke.name
+  provisioner_email = google_service_account.gke_provisioner.email
+  account_id = var.PROVISIONER_SERVICE_ACCOUNT_NAME
+  zone = var.project.zone
+  region = var.project.region
 }
