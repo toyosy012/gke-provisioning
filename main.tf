@@ -20,64 +20,13 @@ module "network" {
   location = var.location
 }
 
-resource "google_container_node_pool" "training_nodes" {
-  cluster = google_container_cluster.training_cluster.name
-  name = "training-node-pool"
-
+module "gke_cluster" {
+  source = "./modules/gke"
   location = var.location
-  node_count = 1
-  node_config {
-    preemptible  = true
-    machine_type = "e2-medium"
-    service_account = google_service_account.gke_nodes.email
-    oauth_scopes    = [
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
-  }
-  management {
-    auto_repair = true
-    auto_upgrade = true
-  }
-  upgrade_settings {
-    max_surge       = 1
-    max_unavailable = 0
-  }
-}
-
-resource "google_service_account" "gke_nodes" {
-  account_id   = "gke-nodes"
-  display_name = "My Service Account For My Cluster Nodes"
-}
-
-resource "google_compute_network" "training_gke" {
-  name                    = "training-gke-network"
-  auto_create_subnetworks = false
-}
-
-resource "google_compute_subnetwork" "training_gke" {
-  name   = "training-gke-subnetwork"
-  region = var.location
-
-  # サブネットで使用したい内部IPアドレスの範囲を指定する
-  ip_cidr_range = "10.0.0.0/16"
-  network       = google_compute_network.training_gke.self_link
-
-  # CloudLoggingにFlowLogログを出力したい場合は設定する
-  log_config {
-    metadata = "INCLUDE_ALL_METADATA"
-  }
-
-  secondary_ip_range {
-    range_name    = "training-gke-subnet-for-pods"
-    ip_cidr_range = "10.1.0.0/16"
-  }
-
-  secondary_ip_range {
-    range_name    = "training-gke-subnet-for-services"
-    ip_cidr_range = "10.2.0.0/16"
-  }
-
-  private_ip_google_access = true
+  gke_network_name = module.network.training_network_name
+  gke_subnetwork_name = module.network.training_subnetwork_name
+  pod_ip_range_name = module.network.pod_ip_range_name
+  service_ip_range_name = module.network.service_ip_range_name
 }
 
 module "bastion_host" {
