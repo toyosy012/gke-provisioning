@@ -15,30 +15,9 @@ resource "google_project_iam_member" "gke_provisioning_roles" {
   project = var.PROJECT_NUMBER
 }
 
-resource "google_container_cluster" "training_cluster" {
-  name     = "training-cluster"
+module "network" {
+  source = "./modules/network"
   location = var.location
-
-  remove_default_node_pool = true
-  initial_node_count       = 1
-  min_master_version = "1.23"
-
-  network = google_compute_network.training_gke.name
-  subnetwork = google_compute_subnetwork.training_gke.name
-  enable_intranode_visibility = true
-
-  private_cluster_config {
-    enable_private_endpoint = true
-    enable_private_nodes = true
-    master_ipv4_cidr_block = "192.168.0.0/28"
-  }
-
-  master_authorized_networks_config {
-  }
-  ip_allocation_policy {
-    cluster_secondary_range_name = google_compute_subnetwork.training_gke.secondary_ip_range.0.range_name
-    services_secondary_range_name = google_compute_subnetwork.training_gke.secondary_ip_range.1.range_name
-  }
 }
 
 resource "google_container_node_pool" "training_nodes" {
@@ -109,8 +88,8 @@ module "bastion_host" {
   PROJECT_ID = var.PROJECT_ID
   PROJECT_NUMBER = var.PROJECT_NUMBER
   bastion_hostname = var.bastion_hostname
-  gke_network_name = google_compute_network.training_gke.name
-  gke_subnetwork_name = google_compute_subnetwork.training_gke.name
+  gke_network_name = module.network.training_network_name
+  gke_subnetwork_name = module.network.training_subnetwork_name
   provisioner_email = google_service_account.gke_provisioner.email
   account_id = var.PROVISIONER_SERVICE_ACCOUNT_NAME
   zone = var.project.zone
@@ -120,7 +99,7 @@ module "bastion_host" {
 module "nat" {
   source = "./modules/nat"
 
-  gke_network_name = google_compute_network.training_gke.name
+  gke_network_name = module.network.training_network_name
   project_id       = var.PROJECT_ID
   region           = var.project.region
 }
