@@ -23,17 +23,16 @@ variable "BASTION_IMAGE_FAMILY" {
   description = "Read the TF_VAR_BASTION_IMAGE_FAMILY variable by environment."
 }
 
-variable "PROVISIONER_SERVICE_ACCOUNT_NAME" {
-  type = string
-  description = "Read the TF_VAR_PROVISIONER_SERVICE_ACCOUNT_NAME variable by environment."
-}
+variable "provisioner_email" { type = string }
 
-variable "project" {
-  type = object({
-    region  = string
-    zone    = string
-  })
-}
-
-variable "location" { type = string }
 variable "bastion_hostname" { type = string }
+
+variable "region" { type = string }
+
+variable "zone" { type = string }
+
+variable "gke_network_name" { type = string }
+
+variable "gke_subnetwork_name" { type = string }
+
+variable "account_id" { type = string }

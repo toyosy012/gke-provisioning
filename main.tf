@@ -69,18 +69,18 @@ resource "google_service_account" "gke_nodes" {
   display_name = "My Service Account For My Cluster Nodes"
 }
 
-resource "google_compute_network" "gke_network" {
+resource "google_compute_network" "training_gke" {
   name                    = "training-gke-network"
   auto_create_subnetworks = false
 }
 
-resource "google_compute_subnetwork" "gke_subnetwork" {
+resource "google_compute_subnetwork" "training_gke" {
   name   = "training-gke-subnetwork"
   region = var.location
 
   # サブネットで使用したい内部IPアドレスの範囲を指定する
   ip_cidr_range = "10.0.0.0/16"
-  network       = google_compute_network.gke_network.self_link
+  network       = google_compute_network.training_gke.self_link
 
   # CloudLoggingにFlowLogログを出力したい場合は設定する
   log_config {
@@ -100,67 +100,18 @@ resource "google_compute_subnetwork" "gke_subnetwork" {
   private_ip_google_access = true
 }
 
-resource "google_service_account" "bastion" {
-  account_id   = "bastion"
-  display_name = "Bastion Server For Private GKE Cluster"
-}
-
-data "template_file" "startup_script" {
-  template = <<-EOF
-  sudo apt-get update -y
-  sudo apt-get install -y tinyproxy
-  EOF
-}
-
-resource "google_compute_instance" "gke_bastion_host" {
-  name         = var.bastion_hostname
-  machine_type = "n1-standard-1"
-  zone         = var.project.zone
-  project      = var.PROJECT_NUMBER
-  tags = [
-    "bastion"
-  ]
-
-  boot_disk {
-    initialize_params {
-      image = var.BASTION_IMAGE
-    }
-  }
-
-  metadata_startup_script = data.template_file.startup_script.rendered
-  network_interface {
-    network = google_compute_network.gke_network.name
-    subnetwork = google_compute_subnetwork.gke_subnetwork.name
-  }
-
-  allow_stopping_for_update = true
-
-  service_account {
-    email = google_service_account.bastion.email
-    scopes = ["cloud-platform"]
-  }
-  scheduling {
-    preemptible = true
-    automatic_restart = false
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-        READY=""
-        for i in $(seq 1 20); do
-          if gcloud compute ssh ${var.bastion_hostname} --project ${var.PROJECT_ID} --zone ${var.project.zone} --command uptime; then
-            READY="yes"
-            break;
-          fi
-          echo "Waiting for ${var.bastion_hostname} to initialize..."
-          sleep 10;
-        done
-        if [[ -z $READY ]]; then
-          echo "${var.bastion_hostname} failed to start in time."
-          echo "Please verify that the instance starts and then re-run `terraform apply`"
-          exit 1
-        fi
-EOF
-  }
-
+module "bastion_host" {
+  source = "./modules/bastion"
+  BASTION_IMAGE_FAMILY = var.BASTION_IMAGE_FAMILY
+  BASTION_IMAGE_PROJECT = var.BASTION_IMAGE_PROJECT
+  CREDENTIALS_PATH = var.CREDENTIALS_PATH
+  PROJECT_ID = var.PROJECT_ID
+  PROJECT_NUMBER = var.PROJECT_NUMBER
+  bastion_hostname = var.bastion_hostname
+  gke_network_name = google_compute_network.training_gke.name
+  gke_subnetwork_name = google_compute_subnetwork.training_gke.name
+  provisioner_email = google_service_account.gke_provisioner.email
+  account_id = var.PROVISIONER_SERVICE_ACCOUNT_NAME
+  zone = var.project.zone
+  region = var.project.region
 }
