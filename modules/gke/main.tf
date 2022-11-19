@@ -4,42 +4,42 @@ resource "google_container_cluster" "training_cluster" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
-  min_master_version = "1.23"
+  min_master_version       = "1.23"
 
-  network = var.gke_network_name
-  subnetwork = var.gke_subnetwork_name
+  network                     = var.gke_network_name
+  subnetwork                  = var.gke_subnetwork_name
   enable_intranode_visibility = true
 
   private_cluster_config {
     enable_private_endpoint = true
-    enable_private_nodes = true
-    master_ipv4_cidr_block = "192.168.0.0/28"
+    enable_private_nodes    = true
+    master_ipv4_cidr_block  = "192.168.0.0/28"
   }
 
   master_authorized_networks_config {
   }
   ip_allocation_policy {
-    cluster_secondary_range_name = var.pod_ip_range_name
+    cluster_secondary_range_name  = var.pod_ip_range_name
     services_secondary_range_name = var.service_ip_range_name
   }
 }
 
 resource "google_container_node_pool" "training_nodes" {
   cluster = google_container_cluster.training_cluster.name
-  name = "training-node-pool"
+  name    = "training-node-pool"
 
-  location = var.location
+  location   = var.location
   node_count = 1
   node_config {
-    preemptible  = true
-    machine_type = "e2-medium"
+    preemptible     = true
+    machine_type    = "e2-medium"
     service_account = google_service_account.gke_nodes.email
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
   management {
-    auto_repair = true
+    auto_repair  = true
     auto_upgrade = true
   }
   upgrade_settings {

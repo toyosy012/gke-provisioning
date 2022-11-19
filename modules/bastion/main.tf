@@ -34,31 +34,31 @@ resource "google_compute_instance" "gke_bastion_host" {
 
   metadata_startup_script = data.template_file.startup_script.rendered
   network_interface {
-    network = var.gke_network_name
+    network    = var.gke_network_name
     subnetwork = var.gke_subnetwork_name
   }
 
   allow_stopping_for_update = true
 
   service_account {
-    email = google_service_account.bastion.email
+    email  = google_service_account.bastion.email
     scopes = ["cloud-platform"]
   }
   scheduling {
-    preemptible = true
+    preemptible       = true
     automatic_restart = false
   }
 }
 
 resource "google_compute_firewall" "gke_bastion_firewall" {
-  name = "gke-bastion-network"
+  name    = "gke-bastion-network"
   network = var.gke_network_name
   allow {
     protocol = "tcp"
-    ports = ["22"]
+    ports    = ["22"]
   }
 
-  target_tags = ["bastion"]
+  target_tags   = ["bastion"]
   source_ranges = ["35.235.240.0/20"]
 
   log_config {
