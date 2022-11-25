@@ -1,20 +1,3 @@
-resource "google_service_account" "gke_provisioner" {
-  account_id   = "gke-provisioner"
-  display_name = "gke-provisioner"
-  description  = "A service account for GKE"
-}
-
-resource "google_project_iam_member" "gke_provisioning_roles" {
-  for_each = toset([
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/monitoring.viewer"
-  ])
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.gke_provisioner.email}"
-  project = var.PROJECT_NUMBER
-}
-
 module "network" {
   source   = "./modules/network"
   location = var.location
@@ -39,7 +22,6 @@ module "bastion_host" {
   bastion_hostname      = var.bastion_hostname
   gke_network_name      = module.network.training_network_name
   gke_subnetwork_name   = module.network.training_subnetwork_name
-  provisioner_email     = google_service_account.gke_provisioner.email
   account_id            = var.PROVISIONER_SERVICE_ACCOUNT_NAME
   zone                  = var.project.zone
   region                = var.project.region

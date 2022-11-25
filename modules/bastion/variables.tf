@@ -23,8 +23,6 @@ variable "BASTION_IMAGE_FAMILY" {
   description = "Read the TF_VAR_BASTION_IMAGE_FAMILY variable by environment."
 }
 
-variable "provisioner_email" { type = string }
-
 variable "bastion_hostname" { type = string }
 
 variable "region" { type = string }
