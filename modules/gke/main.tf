@@ -52,3 +52,14 @@ resource "google_service_account" "gke_nodes" {
   account_id   = "gke-nodes"
   display_name = "My Service Account For My Cluster Nodes"
 }
+
+resource "google_project_iam_member" "gke_provisioning_roles" {
+  for_each = toset([
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+    "roles/monitoring.viewer"
+  ])
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.gke_nodes.email}"
+  project = var.project_number
+}
