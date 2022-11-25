@@ -10,6 +10,7 @@ module "gke_cluster" {
   gke_subnetwork_name   = module.network.training_subnetwork_name
   pod_ip_range_name     = module.network.pod_ip_range_name
   service_ip_range_name = module.network.service_ip_range_name
+  project_number        = var.PROJECT_NUMBER
 }
 
 module "bastion_host" {
