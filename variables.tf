@@ -1,39 +1,10 @@
-variable "CREDENTIALS_PATH" {
+variable "project_id" {
   type        = string
-  description = "Read the TF_VARS_CREDENTIALS_PATH variable by environment."
+  description = "Read the TF_VAR_project_id variable by environment."
 }
 
-variable "PROJECT_ID" {
+variable "project_number" {
   type        = string
-  description = "Read the TF_VAR_PROJECT_ID variable by environment."
+  description = "Read the TF_VAR_project_number variable by environment."
 }
 
-variable "PROJECT_NUMBER" {
-  type        = string
-  description = "Read the TF_VAR_PROJECT_NUMBER variable by environment."
-}
-
-variable "BASTION_IMAGE_PROJECT" {
-  type        = string
-  description = "Read the TF_VAR_BASTION_IMAGE_PROJECT variable by environment."
-}
-
-variable "BASTION_IMAGE_FAMILY" {
-  type        = string
-  description = "Read the TF_VAR_BASTION_IMAGE_FAMILY variable by environment."
-}
-
-variable "PROVISIONER_SERVICE_ACCOUNT_NAME" {
-  type        = string
-  description = "Read the TF_VAR_PROVISIONER_SERVICE_ACCOUNT_NAME variable by environment."
-}
-
-variable "project" {
-  type = object({
-    region = string
-    zone   = string
-  })
-}
-
-variable "location" { type = string }
-variable "bastion_hostname" { type = string }
