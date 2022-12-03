@@ -1,7 +1,3 @@
-locals {
-  bastion_hostname = "gke-bastion-host"
-}
-
 data "template_file" "startup_script" {
   template = <<-EOF
   $(gcloud info --format="value(basic.python_location)") -m pip install numpy
