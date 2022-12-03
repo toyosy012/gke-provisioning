@@ -16,9 +16,9 @@ terraform {
 }
 
 provider "google" {
-  project     = var.project_id
-  region      = local.region
-  zone        = local.zone
+  project = var.project_id
+  region  = local.region
+  zone    = local.zone
 }
 
 module "network" {
@@ -37,16 +37,16 @@ module "gke_cluster" {
 }
 
 module "bastion_host" {
-  source                = "./modules/bastion"
-  image_family  = "ubuntu-os-cloud"
-  image_project = "ubuntu-2004-lts"
-  project_id            = var.project_id
-  project_number        = var.project_number
-  bastion_hostname      = local.bastion_hostname
-  gke_network_name      = module.network.training_network_name
-  gke_subnetwork_name   = module.network.training_subnetwork_name
-  zone                  = local.zone
-  region                = local.region
+  source              = "./modules/bastion"
+  image_family        = "ubuntu-2004-lts"
+  image_project       = "ubuntu-os-cloud"
+  project_id          = var.project_id
+  project_number      = var.project_number
+  bastion_hostname    = local.bastion_hostname
+  gke_network_name    = module.network.training_network_name
+  gke_subnetwork_name = module.network.training_subnetwork_name
+  zone                = local.zone
+  region              = local.region
 }
 
 module "nat" {
