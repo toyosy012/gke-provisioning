@@ -21,14 +21,14 @@ resource "google_compute_instance" "gke_bastion_host" {
   name         = var.bastion_hostname
   machine_type = "n1-standard-1"
   zone         = var.zone
-  project      = var.PROJECT_ID
+  project      = var.project_id
   tags = [
     "bastion"
   ]
 
   boot_disk {
     initialize_params {
-      image = "${var.BASTION_IMAGE_PROJECT}/${var.BASTION_IMAGE_FAMILY}"
+      image = "${var.image_project}/${var.image_family}"
     }
   }
 
