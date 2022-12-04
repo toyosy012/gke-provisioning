@@ -55,4 +55,4 @@ jobs:
       - name: Terraform destroy
         if: '${{ github.event.inputs.plan }} == destroy'
         id: apply
-        run: terraform apply plan
+        run: terraform destroy
