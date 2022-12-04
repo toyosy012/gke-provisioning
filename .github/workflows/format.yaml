@@ -1,0 +1,57 @@
+name: terraform-format
+run-name: Provide ${{ github.sha }} by ${{ github.actor }}
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+    branches:
+      - 'ISSUE-**'
+    paths:
+      - '**.tf'
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      id-token: write
+      issues: write
+      packages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.3
+      - name: Terraform Format
+        continue-on-error: true
+        id: fmt
+        run:  terraform fmt -diff=true -recursive
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v1
+        with:
+          create_credentials_file: 'true'
+          workload_identity_provider: '${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}'
+          access_token_lifetime: '300s'
+          service_account: '${{ secrets.SERVICE_ACCOUNT }}'
+      - name: Terraform Init
+        id: init
+        run: terraform init -reconfigure -backend-config=conf/backend.txt
+        timeout-minutes: 1
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+      - name: Create Pull Request
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: style/change_auto_reformat Reformat Terraform Code
