@@ -2,13 +2,10 @@ name: auto-tf-provisioning
 run-name: Provide ${{ github.sha }} by ${{ github.actor }}
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
     branches:
-      - 'ISSUE-**'
-    paths:
-      - '**.tf'
+      - 'release'
+    types:
+      - 'closed'
 env:
   TF_VAR_project_id : ${{ secrets.TF_VAR_PROJECT_ID }}
   TF_VAR_project_number: ${{ secrets.TF_VAR_PROJECT_NUMBER }}
