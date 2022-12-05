@@ -1,3 +1,6 @@
 .idea/
 .terraform
 *.tfstate*
+.env
+plan
+.tfvars

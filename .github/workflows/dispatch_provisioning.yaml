@@ -1,0 +1,58 @@
+name: dispatch-tf-provisioning
+run-name: Provide ${{ github.sha }} by ${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: 'Input apply or destroy'
+        required: true
+env:
+  TF_VAR_project_id : ${{ secrets.TF_VAR_PROJECT_ID }}
+  TF_VAR_project_number: ${{ secrets.TF_VAR_PROJECT_NUMBER }}
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      id-token: write
+      issues: write
+      packages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.3
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v1
+        with:
+          create_credentials_file: 'true'
+          workload_identity_provider: '${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}'
+          access_token_lifetime: '9000s'
+          service_account: '${{ secrets.SERVICE_ACCOUNT }}'
+      - name: Terraform Init
+        id: init
+        run: terraform init -reconfigure -backend-config=conf/backend.txt
+        timeout-minutes: 1
+      - name: Terraform plan
+        if: '${{ github.event.inputs.plan }} == apply'
+        id: plan
+        run: terraform plan -o plan
+      - name: Terraform apply
+        if: '${{ github.event.inputs.plan }} == apply'
+        id: apply
+        run: terraform apply plan
+      - name: Terraform destroy
+        if: '${{ github.event.inputs.plan }} == destroy'
+        id: destroy
+        run: terraform destroy
