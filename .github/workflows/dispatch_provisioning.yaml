@@ -47,7 +47,7 @@ jobs:
       - name: Terraform plan
         if: '${{ github.event.inputs.plan }} == apply'
         id: plan
-        run: terraform plan -o plan
+        run: terraform plan -out plan
       - name: Terraform apply
         if: '${{ github.event.inputs.plan }} == apply'
         id: apply
