@@ -4,3 +4,4 @@
 .env
 plan
 .tfvars
+gha-creds*

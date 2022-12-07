@@ -24,7 +24,7 @@ jobs:
       repository-projects: write
       security-events: write
       statuses: write
-    timeout-minutes: 3
+    timeout-minutes: 21
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         with:
           create_credentials_file: 'true'
           workload_identity_provider: '${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}'
-          access_token_lifetime: '9000s'
+          access_token_lifetime: '120000s'
           service_account: '${{ secrets.SERVICE_ACCOUNT }}'
       - name: Terraform Init
         id: init
@@ -47,11 +47,12 @@ jobs:
       - name: Terraform plan
         if: '${{ github.event.inputs.plan }} == apply'
         id: plan
-        run: terraform plan -o plan
+        run: terraform plan -out plan
       - name: Terraform apply
         if: '${{ github.event.inputs.plan }} == apply'
         id: apply
         run: terraform apply plan
+        timeout-minutes: 15
       - name: Terraform destroy
         if: '${{ github.event.inputs.plan }} == destroy'
         id: destroy
