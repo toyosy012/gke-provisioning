@@ -36,8 +36,7 @@ jobs:
         continue-on-error: true
         id: fmt
         run:  terraform fmt -diff=true -recursive
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
+      - name: 'Authenticate to Google Cloud'
         uses: google-github-actions/auth@v1
         with:
           create_credentials_file: 'true'
