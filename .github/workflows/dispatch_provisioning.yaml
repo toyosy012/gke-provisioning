@@ -45,16 +45,16 @@ jobs:
         run: terraform init -reconfigure -backend-config=conf/backend.txt
         timeout-minutes: 1
       - name: Terraform plan
-        if: '${{ github.event.inputs.plan }} == apply'
+        if: github.event.inputs.plan == 'apply'
         id: plan
         run: terraform plan -out plan
       - name: Terraform apply
-        if: '${{ github.event.inputs.plan }} == apply'
+        if: github.event.inputs.plan == 'apply'
         id: apply
         run: terraform apply plan
         timeout-minutes: 20
       - name: Terraform destroy
-        if: '${{ github.event.inputs.plan }} == destroy'
+        if: github.event.inputs.plan == 'destroy'
         id: destroy
         run: terraform destroy -auto-approve
         timeout-minutes: 20
