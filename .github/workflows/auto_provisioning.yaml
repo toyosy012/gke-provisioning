@@ -24,7 +24,7 @@ jobs:
       repository-projects: write
       security-events: write
       statuses: write
-    timeout-minutes: 3
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         with:
           create_credentials_file: 'true'
           workload_identity_provider: '${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}'
-          access_token_lifetime: '9000s'
+          access_token_lifetime: '150000s'
           service_account: '${{ secrets.SERVICE_ACCOUNT }}'
       - name: Terraform Init
         id: init
@@ -50,3 +50,4 @@ jobs:
       - name: Terraform apply
         id: apply
         run: terraform apply plan
+        timeout-minutes: 20
