@@ -56,5 +56,5 @@ jobs:
       - name: Terraform destroy
         if: '${{ github.event.inputs.plan }} == destroy'
         id: destroy
-        run: terraform destroy
+        run: terraform destroy -auto-approve
         timeout-minutes: 20
